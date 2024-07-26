@@ -1,0 +1,168 @@
+-- Table 1: Metadata for movies
+CREATE TABLE movie_metadata (
+    id INT PRIMARY KEY,
+    adult BOOLEAN,
+    budget INT,
+    homepage VARCHAR(255),
+    imdb_id VARCHAR(255),
+    original_language VARCHAR(255),
+    original_title VARCHAR(255),
+    overview TEXT,
+    popularity FLOAT,
+    poster_path VARCHAR(255),
+    release_date DATE,
+    revenue FLOAT,
+    runtime INT,
+    status VARCHAR(255),
+    tagline TEXT,
+    title VARCHAR(255),
+    video BOOLEAN,
+    vote_average FLOAT,
+    vote_count INT
+);
+
+-- Table 2: External links for movies
+CREATE TABLE links (
+    movieId INT PRIMARY KEY,
+    imdbId VARCHAR(255),
+    tmdbId INT,
+    FOREIGN KEY (tmdbId) REFERENCES movie_metadata(id)
+);
+
+-- Table 3: Collections information
+CREATE TABLE belongs_to_collection (
+    collection_id INT PRIMARY KEY,
+    name VARCHAR(255),
+    poster_path VARCHAR(255),
+    backdrop_path VARCHAR(255)
+);
+
+-- Table 4: Connector between movies and collections
+CREATE TABLE collection_movie_connector (
+    id INT,
+    collection_id INT,
+    FOREIGN KEY (collection_id) REFERENCES belongs_to_collection(collection_id),
+    FOREIGN KEY (id) REFERENCES movie_metadata(id)
+);
+
+-- Table 5: Genres information
+CREATE TABLE genres (
+    genre_id INT PRIMARY KEY,
+    genre_name VARCHAR(255)
+);
+
+-- Table 6: Keywords information
+CREATE TABLE keywords (
+    keyword_id INT PRIMARY KEY,
+    keyword_name VARCHAR(255)
+);
+
+-- Table 7: Connector between movies and genres
+CREATE TABLE genres_movie_connector (
+    Id INT,
+    genre_id INT,
+    FOREIGN KEY (genre_id) REFERENCES genres(genre_id),
+    FOREIGN KEY (id) REFERENCES movie_metadata(id)
+);
+
+-- Table 8: Connector between movies and keywords
+CREATE TABLE keywords_movie_connector (
+    id INT,
+    keyword_id INT,
+    FOREIGN KEY (keyword_id) REFERENCES keywords(keyword_id),
+    FOREIGN KEY (id) REFERENCES movie_metadata(id)
+);
+
+-- Table 9: Production companies information
+CREATE TABLE production_companies (
+    prod_comp_id INT PRIMARY KEY,
+    name VARCHAR(255)
+);
+
+-- Table 10: Production countries information
+CREATE TABLE production_countries (
+    country_code VARCHAR(3) PRIMARY KEY,
+    name VARCHAR(255)
+);
+
+-- Table 11: Connector between movies and production companies
+CREATE TABLE production_companies_movie_connector (
+    id INT,
+    prod_comp_id INT,
+    FOREIGN KEY (prod_comp_id) REFERENCES production_companies(prod_comp_id),
+    FOREIGN KEY (id) REFERENCES movie_metadata(id)
+);
+
+-- Table 12: Connector between movies and production countries
+CREATE TABLE production_countries_movie_connector (
+    id INT,
+    country_code VARCHAR(3),
+    FOREIGN KEY (country_code) REFERENCES production_countries(country_code),
+    FOREIGN KEY (id) REFERENCES movie_metadata(id)
+);
+
+-- Table 13: Spoken languages information
+CREATE TABLE spoken_languages (
+    lang_code VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(255)
+);
+
+-- Table 14: Connector between movies and spoken languages
+CREATE TABLE languages_movie_connector (
+    id INT,
+    lang_code VARCHAR(20),
+    FOREIGN KEY (id) REFERENCES movie_metadata(id),
+    FOREIGN KEY (lang_code) REFERENCES spoken_languages(lang_code)
+);
+
+-- Table 15: Persons information
+CREATE TABLE person (
+    person_id INT PRIMARY KEY,
+    person_name VARCHAR(255),
+    gender INT,
+    profile_path VARCHAR(255)
+);
+
+-- Table 16: Cast information
+CREATE TABLE cast (
+    id INT,
+    cast_id INT,
+    cast_characters TEXT,
+    cast_credit_id VARCHAR(255),
+    person_id INT,
+    cast_order INT,
+    PRIMARY KEY (id, person_id,cast_id),
+    FOREIGN KEY (id) REFERENCES movie_metadata(id),
+    FOREIGN KEY (person_id) REFERENCES person(person_id)
+);
+
+-- Table 17: Crew information
+CREATE TABLE crew (
+    id INT,
+    crew_credit_id VARCHAR(255),
+    crew_department VARCHAR(255),
+    person_id INT,
+    job_list VARCHAR(255),
+    PRIMARY KEY (id, person_id, job_list),
+    FOREIGN KEY (id) REFERENCES movie_metadata(id),
+    FOREIGN KEY (person_id) REFERENCES person(person_id)
+);
+
+-- Table 18: Ratings provided by users for movies
+CREATE TABLE ratings (
+    userId INT,
+    movieId INT,
+    rating FLOAT,
+    timestamp TIMESTAMP,
+    PRIMARY KEY (userId, movieId),
+    FOREIGN KEY (movieId) REFERENCES links(movieId)
+);
+
+-- Table 19: Activity performed by users
+CREATE TABLE activity_logs (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT,
+    movieId INT,
+    activity TEXT,
+    timestamp DATETIME
+);

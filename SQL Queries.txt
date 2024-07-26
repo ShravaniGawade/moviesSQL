@@ -1,0 +1,117 @@
+
+-- Top Rated Movies
+
+SELECT title, vote_average
+FROM movie_metadata
+ORDER BY vote_average DESC
+LIMIT 10;
+
+
+-- Movies With a Specific Keyword
+
+SELECT m.title, m.overview
+FROM movie_metadata m
+JOIN keywords_movie_connector kmc ON m.id = kmc.id
+JOIN keywords k ON kmc.keyword_id = k.keyword_id
+WHERE k.keyword_name = 'detective';
+
+
+-- Find Movies Directed by a Specific Director
+
+SELECT m.title, m.release_date
+FROM movie_metadata m
+JOIN crew c ON m.id = c.id
+JOIN person p ON c.person_id = p.person_id
+WHERE p.person_name = 'John Lasseter' AND c.job_list = 'Director';
+
+
+-- Find Movies With Runtime lesser Than 2 Hours
+
+SELECT title, runtime
+FROM movie_metadata
+WHERE runtime < 120
+ORDER BY runtime DESC;
+
+
+-- List of Movies and the Languages Spoken
+
+SELECT m.title, GROUP_CONCAT(sl.name) AS languages
+FROM movie_metadata m
+JOIN languages_movie_connector lmc ON m.id = lmc.id
+JOIN spoken_languages sl ON lmc.lang_code = sl.lang_code
+GROUP BY m.title;
+
+
+-- Top Rated Movies That Are Not Adult Films
+
+SELECT title
+FROM movie_metadata
+WHERE adult = FALSE
+ORDER BY vote_average DESC
+LIMIT 10;
+
+
+-- Find All Movies Released by a Specific Production Company
+
+SELECT m.title, pc.name AS production_company
+FROM movie_metadata m
+JOIN production_companies_movie_connector pcmc ON m.id = pcmc.id
+JOIN production_companies pc ON pcmc.prod_comp_id = pc.prod_comp_id
+WHERE pc.name = 'Warner Bros.';
+
+
+-- Find Movies Without Any Ratings
+
+SELECT m.title
+FROM movie_metadata m
+LEFT JOIN links l ON m.id = l.tmdbId
+LEFT JOIN ratings r ON l.movieId = r.movieId
+WHERE r.movieId IS NULL;
+
+
+-- Movies with a High Budget that Failed Commercially
+
+Query 9
+SELECT title, budget, revenue, (revenue - budget) as "Loss"
+FROM movie_metadata
+WHERE budget > 100000000 AND revenue > 0 AND revenue < budget
+ORDER BY Loss;
+
+
+-- Most Popular Directors with Highest Average Movie Popularity
+
+SELECT p.person_name AS director, AVG(m.popularity) AS avg_popularity
+FROM movie_metadata m
+JOIN crew c ON m.id = c.id
+JOIN person p ON c.person_id = p.person_id
+WHERE c.job_list = 'Director'
+GROUP BY p.person_name
+ORDER BY avg_popularity DESC
+LIMIT 10;
+
+
+-- Recently Released Movies
+
+SELECT title, release_date
+FROM movie_metadata
+WHERE release_date < now()
+ORDER BY release_date DESC
+LIMIT 10;
+
+
+-- Get Movies with a Specific Tagline
+
+SELECT title, tagline
+FROM movie_metadata
+WHERE tagline IS NOT NULL AND tagline != ''
+LIMIT 10;
+
+-- Top 5 movies in each genre
+
+SELECT title, genre_name, popularity, popularity_rank
+FROM ( SELECT m.title, gm.genre_name, m.popularity,
+ROW_NUMBER() OVER (PARTITION BY gm.genre_name ORDER BY m.popularity DESC) AS popularity_rank
+FROM movie_metadata m 
+JOIN genres_movie_connector gmc ON m.id = gmc.id 
+JOIN genres gm ON gmc.genre_id = gm.genre_id
+) ranked_movies WHERE popularity_rank <= 5;
